@@ -8,13 +8,11 @@
 Class fulmine_geo extends CModule
 {
     var $MODULE_ID = "fulmine.geo";
-    var $MODULE_NAME;
+    var $MODULE_NAME = 'Fulmine Geo module';
+    var $PARTNER_NAME = 'fulmine';
 
     function DoInstall()
     {
-        /*global $DB, $APPLICATION, $step;
-        $APPLICATION->IncludeAdminFile(GetMessage("FORM_INSTALL_TITLE"),
-            $_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/mymodule/install/step1.php");*/
         RegisterModule($this->MODULE_ID);
         symlink(
             $_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/" . $this->MODULE_ID.'/install/components',
@@ -24,10 +22,7 @@ Class fulmine_geo extends CModule
 
     function DoUninstall()
     {
-        /*global $DB, $APPLICATION, $step;
-        $APPLICATION->IncludeAdminFile(GetMessage("FORM_INSTALL_TITLE"),
-            $_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/mymodule/install/unstep1.php");
-        */
         UnRegisterModule($this->MODULE_ID);
+        unlink($_SERVER["DOCUMENT_ROOT"] . "/bitrix/components/".$this->MODULE_ID);
     }
 }
