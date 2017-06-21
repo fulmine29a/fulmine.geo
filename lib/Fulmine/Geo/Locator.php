@@ -28,18 +28,31 @@ class Locator
     public static function startupCheck(){
         /** @var \Fulmine\Geo\Location\ILocation $location */
         /** @var \Fulmine\Geo\Location\ILocation $locationUrl */
-        if(is_object($location = static::getLocationFromSession()))
-            if($location->isUrlValid())
+        if(is_object($location = static::getLocationFromSession())) {
+            if ($location->isUrlValid())
                 return;
-            else{
+            else {
                 $locationUrl = static::getLocationByUrl();
-                if($locationUrl->isGlobal()) {
+                if ($locationUrl->isGlobal()) {
                     list($redirectUrl, $bDoRedirect) = $location->getUrlByGlobalUrl(static::getCurrentFullUrl());
 
-                    if($bDoRedirect)
+                    if ($bDoRedirect)
                         LocalRedirect($redirectUrl);
                 }
             }
+        }else{
+            if(is_object($locationUrl = static::getLocationByUrl()) and $locationUrl->isGlobal()) {
+                if (is_object($location = static::getLocationByIp()) and (!$location->isGlobal())) {
+
+                    static::setLocation($location);
+
+                    list($redirectUrl, $bDoRedirect) = $location->getUrlByGlobalUrl(static::getCurrentFullUrl());
+
+                    if ($bDoRedirect)
+                        LocalRedirect($redirectUrl);
+                }
+            }
+        }
     }
 
     public static function getLocation(){
@@ -47,10 +60,15 @@ class Locator
 
         if(is_object(static::$currentLocation))
             return static::$currentLocation;
-        elseif(is_object($location = static::getLocationFromSession()) and $location->isUrlValid())
+        elseif(is_object($location = static::getLocationFromSession()))
             return static::$currentLocation = $location;
         else
             return static::$currentLocation = static::getLocationByUrl();
+    }
+
+    public static function setLocation($loc){
+        static::$currentLocation = $loc;
+        $_SESSION['fulmine']['Geo']['Location'] = serialize($loc);
     }
 
     public static function isLocationSelected(){
@@ -68,13 +86,20 @@ class Locator
     private static function getLocationFromSession(){
         return isset($_SESSION['fulmine']['Geo']['Location']) ? unserialize($_SESSION['fulmine']['Geo']['Location']) : null;
     }
+
     static private function getLocationByUrl(){
         return static::$locationModel->getLocationByFilter(array(
-            'URL' => static::getCurrentModelUrl()
+            'DOMAIN' => static::getCurrentModelUrl()
         ));
     }
 
     static private function getLocationByIp(){
-        return static::$locationModel->getLocationByFilter(static::$locationProvider->getLocationAsFilter());
+        if(!isset($_SESSION['fulmine']['Geo']['LocationIp'])) {
+            $location = static::$locationModel->getLocationByFilter(static::$locationProvider->getLocationAsFilter());
+            $_SESSION['fulmine']['Geo']['LocationIp'] = serialize($location);
+
+            return $location;
+        }else
+            return unserialize($_SESSION['fulmine']['Geo']['LocationIp']);
     }
 }
