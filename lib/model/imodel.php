@@ -16,4 +16,10 @@ interface IModel
      * @return \Fulmine\Geo\Location\ILocation
      */
     function getLocationByFilter(array $filter);
+
+    /**
+     * @param int $id
+     * @return \Fulmine\Geo\Location\ILocation
+     */
+    function getById($id);
 }

@@ -76,13 +76,11 @@ class CIBlock implements IModel
             );
             $row = $res->Fetch();
         ){
-            print_r($row);
             $count = 0;
             foreach (array_intersect_key($row, $filterKeyValues) as $value)
                 if(!empty($value))
                     $count++;
 
-            var_dump($count, $needCount);
 
             if($count > $countFound or $countFound === 0){
                 $countFound = $count;
@@ -94,25 +92,56 @@ class CIBlock implements IModel
         }
 
         if($found){
-            for(
-                $res =\CIBlockElement::GetProperty(
-                    $found['IBLOCK_ID'],
-                    $found['ID']
-                );
-                $row = $res->Fetch();
-            ){
-                $result[$row['CODE']] = $row['VALUE'];
-            };
-
-            if(empty($result))
-                throw new \Exception('empty location fields');
-
-            return $this->fabric->createLocation($result);
+            return $this->createLocation(
+                $found['ID'],
+                $found['IBLOCK_ID']
+            );
         }else
             throw new \Exception('Location not found, iblock ok? iblock filled?');
+    }
+
+    function getById($id)
+    {
+        if($row = \CIBlockElement::GetList(
+            false,
+            array('ID' => $id)+$this->iblockFilter,
+            false,
+            false,
+            array(
+                'IBLOCK_ID'
+            )
+        )->Fetch()) {
+            return $this->createLocation($id, $row['IBLOCK_ID']);
+        }else
+            throw new \Exception("Location by id $id not found");
+
+    }
+
+    protected function createLocation($id, $iblockId){
+        for (
+            $res = \CIBlockElement::GetProperty(
+                $iblockId,
+                $id
+            );
+            $row = $res->Fetch();
+        ) {
+            $result[$row['CODE']] = $row['VALUE'];
+        };
+
+        if (empty($result))
+            throw new \Exception('empty location fields');
+
+        $result['ID'] = $id;
+
+        return $this->fabric->createLocation($result);
     }
 
     protected function parseFilterNames(array &$filter){
         return array_flip(array_map(function($n){return 'PROPERTY_'.$n; }, array_flip($filter)));
     }
+
+    /**
+     * @param int $id
+     * @return \Fulmine\Geo\Location\ILocation
+     */
 }

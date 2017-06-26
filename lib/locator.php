@@ -27,34 +27,53 @@ class Locator
     public static function startupCheck(){
         /** @var \Fulmine\Geo\Location\ILocation $location */
         /** @var \Fulmine\Geo\Location\ILocation $locationUrl */
-        if(is_object($location = static::getLocationFromSession())) {
+        if(is_object($location = static::getLocationFromSession())) { // если локация в сессии
             if ($location->isUrlValid())
+                // и урл подходит локации - то всё ок
                 return;
-            else {
+            elseif(static::canRedirect()){ // урл локации не подходит и мы не на особом запросе
                 $locationUrl = static::getLocationByUrl();
-                if ($locationUrl->isGlobal()) {
-                    list($redirectUrl, $bDoRedirect) = $location->getUrlByGlobalUrl(static::getCurrentFullUrl());
 
-                    if ($bDoRedirect)
-                        LocalRedirect($redirectUrl);
+                if ($locationUrl->isGlobal()) {
+                    // на глобальном урле переходим на урл сохраненой локации
+                    static::redirectToLocation($location);
+                }else {
+                    // если урл не глобальный - меняем локацию
+                    static::setLocation($locationUrl);
+                    static::setIsAutoSelectedLocation(false);
                 }
             }
         }else{
-            if(is_object($locationUrl = static::getLocationByUrl()) and $locationUrl->isGlobal()) {
-                if (is_object($location = static::getLocationByIp()) and (!$location->isGlobal())) {
+            // если локация не в сесии
 
+            $locationUrl = static::getLocationByUrl();
+
+            if(is_object($locationUrl) and $locationUrl->isGlobal() and static::canRedirect()) {
+                // если мы на глобальном урле и можем редиректиться
+                if(is_object($location = static::getLocationByIp()) and (!$location->isGlobal())) {
+                    // редиректимся если локация по айпи не глобальная
                     static::setLocation($location);
                     static::setIsAutoSelectedLocation();
 
-
-                    list($redirectUrl, $bDoRedirect) = $location->getUrlByGlobalUrl(static::getCurrentFullUrl());
-
-                    if ($bDoRedirect)
-                        LocalRedirect($redirectUrl);
+                    static::redirectToLocation($location);
                 }
+            }
+
+            if(static::canRedirect()){
+                // если запрос не специальный, и мы остались в этой же локации - ставим эту локацию
+                static::setLocation($locationUrl);
+                static::setIsAutoSelectedLocation();
             }
         }
     }
+
+    public static function redirectToLocation(Location\ILocation $location){
+        list($redirectUrl, $bDoRedirect) = $location->getUrlByGlobalUrl(static::getCurrentFullUrl());
+
+        if ($bDoRedirect)
+            LocalRedirect($redirectUrl);
+    }
+
     public static function getLocation(){
         /** @var \Fulmine\Geo\Location\ILocation $location */
 
@@ -77,13 +96,28 @@ class Locator
         return isset($_SESSION['fulmine']['Geo']['Location']);
     }
     public static function IsAutoSelectedLocation(){
-        return $_SESSION['fulmine']['Geo']['Location'];
+        return $_SESSION['fulmine']['Geo']['autoLocation'];
     }
     public static function setIsAutoSelectedLocation($bAutoselected = true){
-        $_SESSION['fulmine']['Geo']['Location'] = $bAutoselected;
+        $_SESSION['fulmine']['Geo']['autoLocation'] = $bAutoselected;
+    }
+
+    /**
+     * @return Model\IModel
+     */
+    public static function getLocationModel()
+    {
+        return static::$locationModel;
     }
 
 
+    protected static function canRedirect(){
+        $req = \Bitrix\Main\Context::getCurrent()->getRequest();
+        return
+            ($req->getRequestMethod() == 'GET')
+            && !$req->isAdminSection()
+            && !$req->isAjaxRequest();
+    }
     protected static function getCurrentModelUrl(){
         return $_SERVER['SERVER_NAME'];
     }

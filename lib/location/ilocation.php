@@ -26,4 +26,10 @@ interface ILocation
      * @return array
      */
     function getUrlByGlobalUrl($url);
+
+    /**
+     * @param array $fields
+     * @return array
+     */
+    function getFields(array $fields);
 }

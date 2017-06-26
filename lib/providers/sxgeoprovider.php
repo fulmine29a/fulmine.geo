@@ -25,10 +25,10 @@ class SXGeoProvider implements ILocationProvider
         $enc = mb_internal_encoding();
         mb_internal_encoding("8bit");
 
-        $info = $this->sxgeo->getCityFull('88.201.128.12');
 
         // TODO: uncomment work code
         //$info = $this->sxgeo->getCityFull($_SERVER['REMOTE_ADDR']);
+        $info = $this->sxgeo->getCityFull('88.201.128.12'); // SPB
 
         mb_internal_encoding($enc);
         return array(

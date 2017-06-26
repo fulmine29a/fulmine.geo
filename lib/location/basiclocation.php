@@ -11,19 +11,18 @@ namespace Fulmine\Geo\Location;
 
 class BasicLocation implements ILocation
 {
-    protected $baseUrl;
-    protected $globalLocation;
-    protected $country;
-    protected $region;
-    protected $city;
+    protected $rawData;
 
     function __construct(array $rawData)
     {
-        $this->baseUrl = $rawData['BASE_URL'];
-        $this->globalLocation = $rawData['GLOBAL'] == 'Y';
-        $this->country = $rawData['COUNTRY'];
-        $this->region = $rawData['REGION'];
-        $this->city = $rawData['CITY'];
+        $this->rawData = $rawData;
+/*
+        $this->baseUrl = $this->$rawData['BASE_URL'];
+        $this->globalLocation = $this->$rawData['GLOBAL'] == 'Y';
+        $this->country = $this->$rawData['COUNTRY'];
+        $this->region = $this->$rawData['REGION'];
+        $this->city = $this->$rawData['CITY'];
+*/
     }
 
     /**
@@ -31,7 +30,7 @@ class BasicLocation implements ILocation
      */
     function isUrlValid()
     {
-        return $_SERVER['SERVER_NAME'] == $this->baseUrl;
+        return $_SERVER['SERVER_NAME'] == $this->rawData['BASE_URL'];
     }
 
     /**
@@ -39,7 +38,7 @@ class BasicLocation implements ILocation
      */
     function isGlobal()
     {
-        return $this->globalLocation;
+        return $this->rawData['GLOBAL'] == 'Y';
     }
 
     /**
@@ -48,7 +47,15 @@ class BasicLocation implements ILocation
      */
     function getUrlByGlobalUrl($url)
     {
-//        TODO: implementation
-        return array('http://'.$this->baseUrl, true);
+        return array('http://'.$this->rawData['BASE_URL'].$url, true);
+    }
+
+    /**
+     * @param array $fields
+     * @return array
+     */
+    function getFields(array $fields)
+    {
+        return array_intersect_key($this->rawData, array_flip($fields));
     }
 }
