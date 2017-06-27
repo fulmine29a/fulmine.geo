@@ -27,8 +27,8 @@ class SXGeoProvider implements ILocationProvider
 
 
         // TODO: uncomment work code
-        //$info = $this->sxgeo->getCityFull($_SERVER['REMOTE_ADDR']);
-        $info = $this->sxgeo->getCityFull('88.201.128.12'); // SPB
+        $info = $this->sxgeo->getCityFull($_SERVER['REMOTE_ADDR']);
+        //$info = $this->sxgeo->getCityFull('88.201.128.12'); // SPB
 
         mb_internal_encoding($enc);
         return array(

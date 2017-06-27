@@ -34,13 +34,14 @@ class Parser
     }
 
     public function registerAsEndBuffer(){
+        $o = $this;
+
         \Bitrix\Main\EventManager::getInstance()->addEventHandler(
             "main",
             "OnEndBufferContent",
-            array(
-                $this,
-                'onEndBuffer'
-            )
+            function (&$q)use ($o){
+                $o->onEndBuffer($q);
+            }
         );
     }
 
@@ -55,7 +56,11 @@ class Parser
     }
 
     protected function prepareValues(){
-        return array_values($this->vals);
+        $res = array();
+        foreach ($this->vals as $val)
+            $res[] = is_array($val) ? $val [0] : $val;
+
+        return $res;
     }
 
     protected function onEndBuffer(&$content){

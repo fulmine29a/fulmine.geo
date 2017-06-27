@@ -30,7 +30,7 @@ class BasicLocation implements ILocation
      */
     function isUrlValid()
     {
-        return $_SERVER['SERVER_NAME'] == $this->rawData['BASE_URL'];
+        return in_array($_SERVER['SERVER_NAME'], $this->rawData['BASE_URL']);
     }
 
     /**
@@ -38,7 +38,7 @@ class BasicLocation implements ILocation
      */
     function isGlobal()
     {
-        return $this->rawData['GLOBAL'] == 'Y';
+        return false;
     }
 
     /**
@@ -47,7 +47,7 @@ class BasicLocation implements ILocation
      */
     function getUrlByGlobalUrl($url)
     {
-        return array('http://'.$this->rawData['BASE_URL'].$url, true);
+        return array('http://'.$this->rawData['BASE_URL'][0].$url, true);
     }
 
     /**

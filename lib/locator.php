@@ -28,6 +28,14 @@ class Locator
         /** @var \Fulmine\Geo\Location\ILocation $location */
         /** @var \Fulmine\Geo\Location\ILocation $locationUrl */
         if(is_object($location = static::getLocationFromSession())) { // если локация в сессии
+            if(!$location->isGlobal() and static::forceGlobal()){
+                static::setLocation($locationGlobal = static::getGlobalLocation());
+                static::setIsAutoSelectedLocation(false);
+                if(static::canRedirect())
+                    static::redirectToLocation($locationGlobal);
+                return;
+            }
+
             if ($location->isUrlValid())
                 // и урл подходит локации - то всё ок
                 return;
@@ -37,6 +45,7 @@ class Locator
                 if ($locationUrl->isGlobal()) {
                     // на глобальном урле переходим на урл сохраненой локации
                     static::redirectToLocation($location);
+                    return;
                 }else {
                     // если урл не глобальный - меняем локацию
                     static::setLocation($locationUrl);
@@ -50,8 +59,8 @@ class Locator
 
             if(is_object($locationUrl) and $locationUrl->isGlobal() and static::canRedirect()) {
                 // если мы на глобальном урле и можем редиректиться
-                if(is_object($location = static::getLocationByIp()) and (!$location->isGlobal())) {
-                    // редиректимся если локация по айпи не глобальная
+                if(!static::forceGlobal() and is_object($location = static::getLocationByIp()) and (!$location->isGlobal())) {
+                    // редиректимся если локация по айпи не глобальная, и не принудительный выбор глобальной
                     static::setLocation($location);
                     static::setIsAutoSelectedLocation();
 
@@ -111,6 +120,11 @@ class Locator
     }
 
 
+    protected static function forceGlobal(){
+        // TODO: сделать нормальное изменение локации через гет
+        return $_REQUEST['FORCE_GLOBAL'] == 'Y';
+    }
+
     protected static function canRedirect(){
         $req = \Bitrix\Main\Context::getCurrent()->getRequest();
         return
@@ -129,6 +143,15 @@ class Locator
     protected static function getLocationFromSession(){
         return isset($_SESSION['fulmine']['Geo']['Location']) ? unserialize($_SESSION['fulmine']['Geo']['Location']) : null;
     }
+
+
+    protected static function getGlobalLocation(){
+        return static::$locationModel->getLocationByFilter(array(
+            'GLOBAL' => 'Y'
+        ));
+    }
+
+
 
     protected static function getLocationByUrl(){
         return static::$locationModel->getLocationByFilter(array(

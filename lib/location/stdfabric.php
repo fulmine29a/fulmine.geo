@@ -14,6 +14,6 @@ class StdFabric implements IFabric
 
     public function createLocation(array $rawData)
     {
-        return new BasicLocation($rawData);
+        return ($rawData['GLOBAL'] === 'Y') ? new GlobalLocation($rawData) : new BasicLocation($rawData);
     }
 }

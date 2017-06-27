@@ -36,6 +36,8 @@ class CIBlock implements IModel
      */
     function getLocationByFilter(array $filter)
     {
+        \Bitrix\Main\Loader::includeModule('iblock');
+
         $filter = $this->parseFilterNames($filter);
 
         $filterKeys = array_keys($filter);
@@ -125,7 +127,10 @@ class CIBlock implements IModel
             );
             $row = $res->Fetch();
         ) {
-            $result[$row['CODE']] = $row['VALUE'];
+            if($row['MULTIPLE'] === 'Y')
+                $result[$row['CODE']][] = $row['VALUE'];
+            else
+                $result[$row['CODE']] = $row['VALUE'];
         };
 
         if (empty($result))
