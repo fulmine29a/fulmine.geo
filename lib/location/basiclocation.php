@@ -58,4 +58,12 @@ class BasicLocation implements ILocation
     {
         return array_intersect_key($this->rawData, array_flip($fields));
     }
+
+    /**
+     * @return int
+     */
+    function getId()
+    {
+        return $this->rawData['ID'];
+    }
 }

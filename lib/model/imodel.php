@@ -22,4 +22,6 @@ interface IModel
      * @return \Fulmine\Geo\Location\ILocation
      */
     function getById($id);
+
+    function getList(array $query = array());
 }

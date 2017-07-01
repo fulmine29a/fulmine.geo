@@ -28,6 +28,11 @@ interface ILocation
     function getUrlByGlobalUrl($url);
 
     /**
+     * @return int
+     */
+    function getId();
+
+    /**
      * @param array $fields
      * @return array
      */

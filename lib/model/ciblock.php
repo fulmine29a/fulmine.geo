@@ -42,7 +42,7 @@ class CIBlock implements IModel
 
         $filterKeys = array_keys($filter);
 
-        $iblockFilter = ['ACTIVE' => 'Y'];
+        $iblockFilter = ['ACTIVE' => 'Y']; // TODO: добавить привязку к сайту, может её в иблокФилтер?
 
         foreach ($filterKeys as $filterKey)
             $iblockFilter[] = array(
@@ -102,8 +102,44 @@ class CIBlock implements IModel
             throw new \Exception('Location not found, iblock ok? iblock filled?');
     }
 
+    function getList(array $query = array())
+    {
+        \Bitrix\Main\Loader::includeModule('iblock');
+
+        $arRes = array();
+
+        $arFilter = $this->iblockFilter;
+
+        if(!empty($query['filter']))
+            $arFilter += static::parseFilterNames($query['filter']);
+
+        for(
+            $res=\CIBlockElement::GetList(
+                empty($query['sort']) ? false : $query['sort'],
+                $arFilter,
+                false,
+                false,
+                array(
+                    'ID',
+                    'IBLOCK_ID'
+                )
+            );
+            $row = $res->Fetch();
+        )
+            $arRes[] = $this->createLocation($row['ID'], $row['IBLOCK_ID']);
+
+        return $arRes;
+    }
+
+    /**
+     * @param int $id
+     * @return \Fulmine\Geo\Location\ILocation
+     * @throws \Exception
+     */
     function getById($id)
     {
+        \Bitrix\Main\Loader::includeModule('iblock');
+
         if($row = \CIBlockElement::GetList(
             false,
             array('ID' => $id)+$this->iblockFilter,
@@ -141,12 +177,8 @@ class CIBlock implements IModel
         return $this->fabric->createLocation($result);
     }
 
-    protected function parseFilterNames(array &$filter){
-        return array_flip(array_map(function($n){return 'PROPERTY_'.$n; }, array_flip($filter)));
+    protected function parseFilterNames(array &$filter){ // TODO: спецсимволы !,>,< надо пробросить
+        return array_flip(array_map(function($n){return 'PROPERTY_'.$n; }, array_flip($filter))); // TODO: проверить array_flip при одинаковых значениях
     }
 
-    /**
-     * @param int $id
-     * @return \Fulmine\Geo\Location\ILocation
-     */
 }

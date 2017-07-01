@@ -11,6 +11,8 @@ namespace Fulmine\Geo;
 
 class Locator
 {
+    const SELECT_LOCATION_GET_VAR = 'SELECT_LOCATION';
+
     /** @var Location\ILocation $currentLocation */
     protected static $currentLocation = null;
 
@@ -27,14 +29,11 @@ class Locator
     public static function startupCheck(){
         /** @var \Fulmine\Geo\Location\ILocation $location */
         /** @var \Fulmine\Geo\Location\ILocation $locationUrl */
+
+        if(static::forceSelectLocation())
+            return;
+
         if(is_object($location = static::getLocationFromSession())) { // если локация в сессии
-            if(!$location->isGlobal() and static::forceGlobal()){
-                static::setLocation($locationGlobal = static::getGlobalLocation());
-                static::setIsAutoSelectedLocation(false);
-                if(static::canRedirect())
-                    static::redirectToLocation($locationGlobal);
-                return;
-            }
 
             if ($location->isUrlValid())
                 // и урл подходит локации - то всё ок
@@ -49,23 +48,27 @@ class Locator
                 }else {
                     // если урл не глобальный - меняем локацию
                     static::setLocation($locationUrl);
-                    static::setIsAutoSelectedLocation(false);
+                    static::setIsAutoSelectedLocation(true);
                 }
+
             }
+
         }else{
             // если локация не в сесии
 
             $locationUrl = static::getLocationByUrl();
 
             if(is_object($locationUrl) and $locationUrl->isGlobal() and static::canRedirect()) {
+
                 // если мы на глобальном урле и можем редиректиться
-                if(!static::forceGlobal() and is_object($location = static::getLocationByIp()) and (!$location->isGlobal())) {
+                if(is_object($location = static::getLocationByIp()) and (!$location->isGlobal())) {
                     // редиректимся если локация по айпи не глобальная, и не принудительный выбор глобальной
                     static::setLocation($location);
                     static::setIsAutoSelectedLocation();
 
                     static::redirectToLocation($location);
                 }
+
             }
 
             if(static::canRedirect()){
@@ -73,14 +76,8 @@ class Locator
                 static::setLocation($locationUrl);
                 static::setIsAutoSelectedLocation();
             }
+
         }
-    }
-
-    public static function redirectToLocation(Location\ILocation $location){
-        list($redirectUrl, $bDoRedirect) = $location->getUrlByGlobalUrl(static::getCurrentFullUrl());
-
-        if ($bDoRedirect)
-            LocalRedirect($redirectUrl);
     }
 
     public static function getLocation(){
@@ -119,12 +116,54 @@ class Locator
         return static::$locationModel;
     }
 
+    public static function getSwitchLocationUrl(Location\ILocation $location){
+        list($redirectUrl, $bDoRedirect) = $location->getUrlByGlobalUrl(static::getCurrentFullUrl());
 
-    protected static function forceGlobal(){
-        // TODO: сделать нормальное изменение локации через гет
-        return $_REQUEST['FORCE_GLOBAL'] == 'Y';
+        $url = new \Bitrix\Main\Web\Uri($redirectUrl);
+        $url->addParams(array(static::SELECT_LOCATION_GET_VAR => $location->getId()));
+
+        return $url->getUri();
     }
 
+
+    protected static function redirectToLocation(Location\ILocation $location){
+
+        if(static::canRedirect()) {
+            list($redirectUrl, $bDoRedirect) = $location->getUrlByGlobalUrl(static::getCurrentFullUrl());
+
+            if ($bDoRedirect)
+                LocalRedirect($redirectUrl);
+        }
+
+    }
+
+    protected static function forceSelectLocation(){
+        $req = \Bitrix\Main\Context::getCurrent()->getRequest();
+
+        if(isset($req[static::SELECT_LOCATION_GET_VAR])){
+            if(
+                is_object(
+                    $location = static::$locationModel->getById((int)$req['SELECT_LOCATION'])
+                )
+            ){
+
+                static::setLocation($location);
+                static::setIsAutoSelectedLocation(false);
+
+                if($location->isUrlValid()) {
+                    $url = new \Bitrix\Main\Web\Uri($req->getDecodedUri());
+                    $url->deleteParams(array(static::SELECT_LOCATION_GET_VAR));
+
+                    LocalRedirect($url->getUri());
+                }else
+                    static::redirectToLocation($location);
+
+                return true;
+            };
+        }
+
+        return false;
+    }
     protected static function canRedirect(){
         $req = \Bitrix\Main\Context::getCurrent()->getRequest();
         return
@@ -136,8 +175,12 @@ class Locator
         return $_SERVER['SERVER_NAME'];
     }
 
-    protected static function getCurrentFullUrl(){
-        return \Bitrix\Main\Application::getInstance()->getContext()->getRequest()->getRequestUri();
+    protected static function getCurrentFullUrl(){ // TODO: сделать действительно full url
+
+        $url = new \Bitrix\Main\Web\Uri(\Bitrix\Main\Application::getInstance()->getContext()->getRequest()->getRequestUri());
+        $url->deleteParams(array(static::SELECT_LOCATION_GET_VAR));
+
+        return $url->getUri();
     }
 
     protected static function getLocationFromSession(){
