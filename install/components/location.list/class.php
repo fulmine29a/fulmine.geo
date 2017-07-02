@@ -1,6 +1,6 @@
 <?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
 
-class CLocationList extends CBitrixComponent{
+class CLocationListComponent extends CBitrixComponent{
     public $locationList;
 
     public function onPrepareComponentParams($arParams)
@@ -16,27 +16,37 @@ class CLocationList extends CBitrixComponent{
 
     public function executeComponent()
     {
+        if(!(
+            \Bitrix\Main\Loader::includeModule('fulmine.geo')
+            and class_exists('\Fulmine\Geo\MainLocator')
+            and \Fulmine\Geo\MainLocator::isInited())
+        )
+            return false;
+
         if($this->startResultCache($this->arParams['CACHE_TIME'], \Bitrix\Main\Application::getInstance()->getContext()->getRequest()->getRequestUri()))
         {
             $this->getLocations();
 
             foreach ($this->locationList as $location){
-                $item = $location->getFields($this->arParams['FIELDS']);
-
-                $item['ID'] = $location->getId();
-
-                if($this->arParams['ADD_URL'])
-                    $item['URL'] = \Fulmine\Geo\MainLocator::getSwitchLocationUrl($location);
-
-                $this->arResult['ITEMS'][] = $item;
+                $this->arResult['ITEMS'][] = $this->prepareLocation($location);
             };
 
             $this->includeComponentTemplate();
         }
-        return;
+        return $this->arResult;
     }
 
     protected function getLocations(){
         $this->locationList = \Fulmine\Geo\MainLocator::getLocationModel()->getList();
+    }
+    protected function prepareLocation(\Fulmine\Geo\Location\ILocation $location){
+        $item = $location->getFields($this->arParams['FIELDS']);
+
+        $item['ID'] = $location->getId();
+
+        if($this->arParams['ADD_URL'])
+            $item['URL'] = \Fulmine\Geo\MainLocator::getSwitchLocationUrl($location);
+
+        return $item;
     }
 }

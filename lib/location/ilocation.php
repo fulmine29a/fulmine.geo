@@ -37,4 +37,12 @@ interface ILocation
      * @return array
      */
     function getFields(array $fields);
+
+
+    /**
+     *
+     * @return array
+     */
+    function getFileSuffixes();
+
 }

@@ -66,4 +66,33 @@ class BasicLocation implements ILocation
     {
         return $this->rawData['ID'];
     }
+
+    /**
+     *
+     * @return array
+     */
+    function getFileSuffixes()
+    {
+        $syffixes = array(
+            $this->getCountry() ? : null,
+            $this->getRegion() ? : null,
+            $this->getCity() ? : null
+        );
+        return $syffixes;
+    }
+
+    protected function getCountry()
+    {
+        return is_array($this->rawData['COUNTRY']) ? $this->rawData['COUNTRY'][0] : null;
+    }
+
+    protected function getRegion()
+    {
+        return is_array($this->rawData['REGION']) ? $this->rawData['REGION'][0] : null;
+    }
+
+    protected function getCity()
+    {
+        return is_array($this->rawData['CITY']) ? $this->rawData['CITY'][0] : null;
+    }
 }

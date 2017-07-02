@@ -10,6 +10,9 @@
 /** @var string $templateFolder */
 /** @var string $componentPath */
 /** @var CBitrixComponent $component */
+
+$this->setFrameMode(true);
+
 ?>
 <div class="jqmWindow-city-select jqmWindow" id="city-select">
     <a href="#" class="popup-window-close-icon popup-window-titlebar-close-icon jqmClose"><i></i></a>

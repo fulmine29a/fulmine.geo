@@ -22,10 +22,18 @@ class Locator
     /** @var Model\IModel $locationModel */
     protected static $locationModel = null;
 
+    protected static $inited = false;
+
     public static function init(Providers\ILocationProvider $locationProvider, Model\IModel $model){
         static::$locationProvider = $locationProvider;
         static::$locationModel = $model;
+        static::$inited = true;
     }
+
+    public static function isInited(){
+        return static::$inited;
+    }
+
     public static function startupCheck(){
         /** @var \Fulmine\Geo\Location\ILocation $location */
         /** @var \Fulmine\Geo\Location\ILocation $locationUrl */
