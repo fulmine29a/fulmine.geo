@@ -18,7 +18,6 @@ $this->setFrameMode(true);
     <a href="#" class="popup-window-close-icon popup-window-titlebar-close-icon jqmClose"><i></i></a>
     <div class="po-content">
         <div class="jqmWindow-city-select_caption">Выберите местоположение</div>
-        <noindex>
         <div class="jqmWindow-city-select_body">
             <?foreach ($arResult['ITEMS'] as $item):?>
                 <div class="jqmWindow-city-select_city">
@@ -26,6 +25,5 @@ $this->setFrameMode(true);
                 </div>
             <?endforeach;?>
         </div>
-        </noindex>
     </div>
 </div>

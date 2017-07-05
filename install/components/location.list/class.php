@@ -9,7 +9,8 @@ class CLocationListComponent extends CBitrixComponent{
             "CACHE_TYPE" => $arParams["CACHE_TYPE"],
             "CACHE_TIME" => isset($arParams["CACHE_TIME"]) ?$arParams["CACHE_TIME"]: 36000000,
             "FIELDS" => isset($arParams['FIELDS']) ? : array('CITY_NAME'),
-            'ADD_URL' => ($arParams['ADD_URL'] == 'Y') or !isset($arParams['ADD_URL'])
+            'ADD_URL' => ($arParams['ADD_URL'] == 'Y') or !isset($arParams['ADD_URL']),
+            'SORT' => is_array($arParams['SORT']) ? $arParams['SORT'] : false
         );
         return $result;
     }
@@ -37,7 +38,11 @@ class CLocationListComponent extends CBitrixComponent{
     }
 
     protected function getLocations(){
-        $this->locationList = \Fulmine\Geo\MainLocator::getLocationModel()->getList();
+        $this->locationList = \Fulmine\Geo\MainLocator::getLocationModel()->getList(
+            array(
+                'sort' => $this->arParams['SORT']
+            )
+        );
     }
     protected function prepareLocation(\Fulmine\Geo\Location\ILocation $location){
         $item = $location->getFields($this->arParams['FIELDS']);
