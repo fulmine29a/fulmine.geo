@@ -9,7 +9,7 @@ class CIncludeFileComponent extends CBitrixComponent{
         $result = array(
             "CACHE_TYPE" => $arParams["CACHE_TYPE"],
             "CACHE_TIME" => isset($arParams["CACHE_TIME"]) ?$arParams["CACHE_TIME"]: 36000000,
-            'FILE_NAME' => $arParams['FILE_NAME'],
+            'FILE_NAME' => (substr($arParams['FILE_NAME'], 0, 1) == '/') ? $arParams['FILE_NAME'] : '/'.$arParams['FILE_NAME'],
             'RECURSIVE' => ($arParams['RECURSIVE'] == 'Y')
         );
 
