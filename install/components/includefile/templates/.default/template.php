@@ -9,8 +9,10 @@
 /** @var string $templateFile */
 /** @var string $templateFolder */
 /** @var string $componentPath */
-/** @var CBitrixComponent $component */
+/** @var CIncludeFileComponent $component */
 
 $this->setFrameMode(true);
-
-include $arResult['FILE_PATH'];
+?>
+<div id="<?=$this->GetEditAreaId($component->getIncludeEntryId())?>">
+    <?include $arResult['FILE_PATH'];?>
+</div>

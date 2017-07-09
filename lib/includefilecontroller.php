@@ -9,12 +9,18 @@
 namespace Fulmine\Geo;
 
 
+use Bitrix\Main\Application;
+
 class IncludeFileController
 {
     const INCLUDES_ROOT = '/location_includes';
 
     static function getFileNameForThisLocation($pathFromRoot, \Fulmine\Geo\Location\ILocation $location){
         return \Bitrix\Main\Application::getDocumentRoot().static::getFileNameWithSuffixes($pathFromRoot, $location->getFileSuffixes());
+    }
+
+    static function getFileNameForGlobal($pathFromRoot){
+        return \Bitrix\Main\Application::getDocumentRoot().static::getFileNameWithSuffixes($pathFromRoot, array());
     }
 
     static function findFileForLocation($pathFromRoot, \Fulmine\Geo\Location\ILocation $location){
@@ -37,6 +43,10 @@ class IncludeFileController
                 return $root.static::INCLUDES_ROOT.$pathFromRoot;
             else
                 return false;
+    }
+
+    static function getIncludeFileSection($absPathToIncludeFile){
+        return \Bitrix\Main\IO\Path::getDirectory(substr($absPathToIncludeFile, strlen(Application::getDocumentRoot()) + strlen(static::INCLUDES_ROOT)));
     }
 
     protected static function getFileNameWithSuffixes($pathFromRoot, array $suffixes){
