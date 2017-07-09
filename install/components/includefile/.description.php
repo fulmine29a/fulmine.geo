@@ -4,9 +4,9 @@ $arComponentDescription = array(
     "DESCRIPTION" => 'Включает файл в зависимости от текушего местоположения',
 //    "ICON" => "/images/icon.gif",
     "PATH" => array(
-        "ID" => "content",
+        "ID" => "fulmine.geo",
         "CHILD" => array(
-            "ID" => "fulmine.geo",
+            "ID" => "locationinclude",
             "NAME" => "Включаемая область"
         )
     ),
