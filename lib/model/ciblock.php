@@ -12,10 +12,10 @@ namespace Fulmine\Geo\Model;
 class CIBlock implements IModel
 {
     /** @var array $iblockFilter фильтр для выборки из инфоблока */
-    private $iblockFilter = [];
+    protected $iblockFilter = [];
 
     /** @var \Fulmine\Geo\Location\IFabric $fabric фабрика для создания локаций  */
-    private $fabric;
+    protected $fabric;
 
     function __construct(\Fulmine\Geo\Location\IFabric $fabric, $iblockCode, $iblockId = null){
 
